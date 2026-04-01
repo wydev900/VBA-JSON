@@ -154,6 +154,9 @@ Private Type json_Options
 
     ' The solidus (/) is not required to be escaped, use this option to escape them as \/ in ConvertToJson
     EscapeSolidus As Boolean
+
+    ' The Unicode is required to be escaped
+    EscapeUnicode As Boolean
 End Type
 Public JsonOptions As json_Options
 
@@ -725,9 +728,15 @@ Private Function json_Encode(ByVal json_Text As Variant) As String
         Case 9
             ' tab -> 9 -> \t
             json_Char = "\t"
-        Case 0 To 31, 127 To 65535
+        Case 0 To 31
             ' Non-ascii characters -> convert to 4-digit hex
             json_Char = "\u" & VBA.Right$("0000" & VBA.Hex$(json_AscCode), 4)
+        Case 127 To 65535
+            If JsonOptions.EscapeUnicode Then
+                json_Char = "\u" & VBA.Right$("0000" & VBA.Hex$(json_AscCode), 4)
+            Else
+                json_Char = ChrW$(json_AscCode)
+            End If
         End Select
 
         json_BufferAppend json_Buffer, json_Char, json_BufferPosition, json_BufferLength
