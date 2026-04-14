@@ -155,8 +155,8 @@ Private Type json_Options
     ' The solidus (/) is not required to be escaped, use this option to escape them as \/ in ConvertToJson
     EscapeSolidus As Boolean
 
-    ' The Unicode is required to be escaped
     EscapeUnicode As Boolean
+    DateToIso As Boolean
 End Type
 Public JsonOptions As json_Options
 
@@ -233,7 +233,7 @@ Public Function ConvertToJson(ByVal JsonValue As Variant, Optional ByVal Whitesp
         ConvertToJson = "null"
     Case VBA.vbDate
         ' Date
-        json_DateStr = ConvertToIso(VBA.CDate(JsonValue))
+        json_DateStr = IIf(JsonOptions.DateToIso, ConvertToIso(VBA.CDate(JsonValue)), JsonValue)
 
         ConvertToJson = """" & json_DateStr & """"
     Case VBA.vbString
@@ -578,7 +578,7 @@ Private Function json_ParseString(json_String As String, ByRef json_Index As Lon
                 json_BufferAppend json_Buffer, vbFormFeed, json_BufferPosition, json_BufferLength
                 json_Index = json_Index + 1
             Case "n"
-                json_BufferAppend json_Buffer, vbCrLf, json_BufferPosition, json_BufferLength
+                json_BufferAppend json_Buffer, vbLf, json_BufferPosition, json_BufferLength
                 json_Index = json_Index + 1
             Case "r"
                 json_BufferAppend json_Buffer, vbCr, json_BufferPosition, json_BufferLength
